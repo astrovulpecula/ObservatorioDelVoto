@@ -42,7 +42,7 @@
             <h1 id="page-title">Una mirada al <span class="serif-word">voto.</span></h1>
             <p class="intro-text">Unimos los sondeos nacionales para entender qué están midiendo — y cuánto difieren entre sí.</p>
           </div>
-          <div class="update-card"><span>ÚLTIMO CORTE DE DATOS</span><strong>14 OCT <span>2026</span></strong><small>Publicaciones desde el 01.09.26</small></div>
+          <div class="update-card"><span>ÚLTIMO CORTE DE DATOS</span><strong id="dataCutDate">14 OCT <span>2026</span></strong><small>Publicaciones desde el 01.09.26</small></div>
         </div>
 
         <div class="summary-controls">
@@ -99,6 +99,32 @@
           </article>
         </div>
 
+        <article class="panel coalition-panel" aria-labelledby="coalition-title">
+          <div class="panel-heading coalition-panel-heading">
+            <div><p class="panel-eyebrow">LABORATORIO PARLAMENTARIO</p><h3 id="coalition-title">Construye una mayoría</h3><p class="coalition-lead">Arrastra los partidos al hemiciclo o pulsa sobre ellos para combinarlos.</p></div>
+            <span class="typebadge">176 DE 350</span>
+          </div>
+          <div class="coalition-workspace">
+            <div class="coalition-palette">
+              <p class="coalition-label">01 — ESCAÑOS DISPONIBLES</p>
+              <div id="coalitionChoices" class="coalition-choices" aria-label="Partidos disponibles"></div>
+            </div>
+            <div class="coalition-stage">
+              <div class="coalition-stage-top"><span class="coalition-label">02 — TU COMBINACIÓN</span><button type="button" id="coalitionClear" class="coalition-clear">Vaciar selección ↺</button></div>
+              <div id="coalitionDrop" class="coalition-drop" aria-label="Zona para soltar partidos y construir una mayoría">
+                <div id="coalitionSelected" class="coalition-selected"></div>
+                <div class="coalition-scale">
+                  <div id="coalitionMeterSegments" class="coalition-meter-segments"></div>
+                  <span class="coalition-threshold" aria-hidden="true"><i></i><b>176 · MAYORÍA ABSOLUTA</b></span>
+                </div>
+                <div class="coalition-ticks"><span>0</span><span>350</span></div>
+              </div>
+              <div id="coalitionResult" class="coalition-result" aria-live="polite"></div>
+            </div>
+          </div>
+          <p class="chart-footnote">Simulación aritmética con escaños ilustrativos, no una previsión de pactos ni de formación de gobierno. «Resto» agrupa varias fuerzas y no se puede seleccionar como un partido único. La selección sigue los filtros de la página.</p>
+        </article>
+
         <div class="section-heading lower-heading"><div><p class="eyebrow text-muted">03 / SERIE TEMPORAL</p><h2>Cómo cambia la media</h2><p>Evolución de la media disponible por fecha de publicación; se utiliza la última medición de cada instituto en cada corte.</p></div></div>
         <article class="panel timeline-panel">
           <div class="timeline-controls" id="timelineLegend"><button class="line-toggle active" data-party="PP" aria-pressed="true"><span style="--dot:#1767B2"></span>PP</button><button class="line-toggle active" data-party="PSOE" aria-pressed="true"><span style="--dot:#E0454D"></span>PSOE</button><button class="line-toggle active" data-party="VOX" aria-pressed="true"><span style="--dot:#5C9739"></span>Vox</button><button class="line-toggle active" data-party="SUMAR" aria-pressed="true"><span style="--dot:#D64D9B"></span>Sumar</button></div>
@@ -106,6 +132,10 @@
           <p class="chart-footnote">La serie incorpora institutos conforme publican su primer sondeo; al principio hay menos casas disponibles. El CIS solo se incorpora a partir de su fecha de publicación.</p>
         </article>
         <div class="cta-strip"><div><span class="eyebrow">IR MÁS ALLÁ DE LA MEDIA</span><h3>Dos encuestas. Dos miradas.</h3><p>Compara sus cifras, las diferencias por partido y la ficha de cada sondeo.</p></div><a href="#comparador" class="button button-dark">Abrir comparador <span aria-hidden="true">↗</span></a></div>
+        <section class="updates-section" aria-labelledby="updates-title">
+          <div class="section-heading updates-heading"><div><p class="eyebrow text-muted">04 / NUEVAS PUBLICACIONES</p><h2 id="updates-title">Última actualización</h2><p>Las incorporaciones más recientes al archivo nacional, con fecha, medio e instituto.</p></div><span id="latestCut" class="section-aside"></span></div>
+          <div class="panel updates-panel"><div id="latestUpdates" class="updates-list"></div><div class="updates-footer"><span>Datos procedentes de las fichas del archivo de encuestas.</span><a href="#archivo">Ver todas las encuestas ↗</a></div></div>
+        </section>
       </section>
 
       <section id="comparador" class="page" aria-labelledby="comparator-title" hidden>
@@ -118,7 +148,7 @@
 
       <section id="archivo" class="page" aria-labelledby="archive-title" hidden>
         <div class="inner-heading"><p class="eyebrow"><span class="eyebrow-line"></span> FUENTES / ARCHIVO NACIONAL</p><h1 id="archive-title">Todos los <span class="serif-word">sondeos.</span></h1><p>Una encuesta por fila, con fecha de publicación, empresa encargada, estimaciones y enlace a la fuente.</p></div>
-        <div class="archive-tools"><div class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="archiveSearch" placeholder="Buscar por medio o instituto..." aria-label="Buscar encuestas"></div><select id="archiveMonth" aria-label="Filtrar por mes"><option value="all">Todo el periodo</option><option value="2026-10">Octubre 2026</option><option value="2026-09">Septiembre 2026</option></select><select id="archiveType" aria-label="Filtrar por tipo de fuente"><option value="all">Todos los medios</option><option value="organismo">Organismos públicos</option><option value="prensa">Prensa</option><option value="tv_radio">Radio / televisión</option><option value="digital">Medios digitales</option><option value="informe">Institutos / informes</option></select><button id="exportCSV" class="button button-outline">↓ Exportar CSV</button></div>
+        <div class="archive-tools"><div class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="archiveSearch" placeholder="Buscar por medio o instituto..." aria-label="Buscar encuestas"></div><select id="archiveMonth" aria-label="Filtrar por mes"><option value="all">Todo el periodo</option></select><select id="archiveType" aria-label="Filtrar por tipo de fuente"><option value="all">Todos los medios</option><option value="organismo">Organismos públicos</option><option value="prensa">Prensa</option><option value="tv_radio">Radio / televisión</option><option value="digital">Medios digitales</option><option value="informe">Institutos / informes</option></select><button id="exportCSV" class="button button-outline">↓ Exportar CSV</button></div>
         <div class="archive-resultbar"><strong id="archiveCount">35 encuestas</strong><span>Ordenadas por publicación · más recientes primero</span></div>
         <div class="table-shell"><table class="archive-table"><thead><tr><th>PUBLICACIÓN</th><th>MEDIO / INSTITUTO</th><th>PP</th><th>PSOE</th><th>VOX</th><th>SUMAR</th><th>FUENTE</th></tr></thead><tbody id="archiveBody"></tbody></table></div>
         <p class="archive-footnote">Una publicación puede recoger una estimación de voto y una proyección de escaños. Las encuestas internas sin porcentajes completos y las reestimaciones sobre un mismo trabajo de campo no forman parte de la media.</p>
@@ -126,12 +156,12 @@
 
       <section id="metodologia" class="page" aria-labelledby="method-title" hidden>
         <div class="inner-heading"><p class="eyebrow"><span class="eyebrow-line"></span> SOBRE EL PROYECTO</p><h1 id="method-title">Los números, <span class="serif-word">a la vista.</span></h1><p>Este observatorio muestra la procedencia de sus cifras y cómo calcula sus gráficos. Sin fórmula oculta.</p></div>
-        <div class="method-grid"><article class="panel method-card"><div class="method-no">01</div><h2>Qué medimos</h2><p>Estimaciones de intención de voto para el Congreso de los Diputados a escala nacional, publicadas del 1 de septiembre al 14 de octubre de 2026, incluido el CIS. No mezclamos aquí el barómetro autonómico del CEO: su universo es Cataluña.</p></article><article class="panel method-card"><div class="method-no">02</div><h2>Media principal</h2><p>Por defecto tomamos la última encuesta publicada de <strong>cada instituto demoscópico</strong> dentro del periodo. Calculamos la media aritmética para cada partido. Esto impide que la mayor frecuencia de publicación de una sola empresa altere en exceso el promedio.</p><div class="formula">media = Σ(voto estimado) / nº institutos</div></article><article class="panel method-card"><div class="method-no">03</div><h2>Dos ajustes visibles</h2><p>El selector «Todas las encuestas» atribuye un peso idéntico a cada sondeo, aunque un instituto tenga varias olas. El selector del CIS permite ver el conjunto con o sin el organismo público. Ningún ajuste cambia los datos originales.</p></article><article class="panel method-card"><div class="method-no">04</div><h2>Escaños sin inventar</h2><p>Los porcentajes de voto no se convierten automáticamente en diputados. En España el reparto se decide por circunscripciones. Solo promediamos las <strong>proyecciones de escaños publicadas</strong> por los institutos; las horquillas se convierten a su punto medio y se conservan sus rangos.</p><div class="formula">otros = 350 − Σ(escaños medios mostrados)</div></article><article class="panel method-card"><div class="method-no">05</div><h2>Fechas y fuentes</h2><p>La fecha que ordena el archivo es la de <strong>publicación</strong>. El trabajo de campo aparece en la ficha de cada encuesta. El archivo identifica el instituto y el medio que la divulgó. Algunos registros utilizan una recopilación pública cuando no fue posible localizar la URL directa de la noticia original.</p></article><article class="panel method-card"><div class="method-no">06</div><h2>Lo que no es</h2><p>No es una predicción, una recomendación electoral, ni una media ponderada por calidad demoscópica. No mide el error histórico de cada empresa. Una media de sondeos puede compartir los sesgos de las fuentes que la componen.</p></article></div>
+        <div class="method-grid"><article class="panel method-card"><div class="method-no">01</div><h2>Qué medimos</h2><p>Estimaciones de intención de voto para el Congreso de los Diputados a escala nacional, publicadas desde el 1 de septiembre de 2026 hasta <span id="methodDataCut">la última fecha de corte</span>, incluido el CIS. No mezclamos aquí el barómetro autonómico del CEO: su universo es Cataluña.</p></article><article class="panel method-card"><div class="method-no">02</div><h2>Media principal</h2><p>Por defecto tomamos la última encuesta publicada de <strong>cada instituto demoscópico</strong> dentro del periodo. Calculamos la media aritmética para cada partido. Esto impide que la mayor frecuencia de publicación de una sola empresa altere en exceso el promedio.</p><div class="formula">media = Σ(voto estimado) / nº institutos</div></article><article class="panel method-card"><div class="method-no">03</div><h2>Dos ajustes visibles</h2><p>El selector «Todas las encuestas» atribuye un peso idéntico a cada sondeo, aunque un instituto tenga varias olas. El selector del CIS permite ver el conjunto con o sin el organismo público. Ningún ajuste cambia los datos originales.</p></article><article class="panel method-card"><div class="method-no">04</div><h2>Escaños sin inventar</h2><p>Los porcentajes de voto no se convierten automáticamente en diputados. En España el reparto se decide por circunscripciones. Solo promediamos las <strong>proyecciones de escaños publicadas</strong> por los institutos; las horquillas se convierten a su punto medio y se conservan sus rangos.</p><div class="formula">otros = 350 − Σ(escaños medios mostrados)</div></article><article class="panel method-card"><div class="method-no">05</div><h2>Fechas y fuentes</h2><p>La fecha que ordena el archivo es la de <strong>publicación</strong>. El trabajo de campo aparece en la ficha de cada encuesta. El archivo identifica el instituto y el medio que la divulgó. Algunos registros utilizan una recopilación pública cuando no fue posible localizar la URL directa de la noticia original.</p></article><article class="panel method-card"><div class="method-no">06</div><h2>Lo que no es</h2><p>No es una predicción, una recomendación electoral, ni una media ponderada por calidad demoscópica. No mide el error histórico de cada empresa. Una media de sondeos puede compartir los sesgos de las fuentes que la componen.</p></article></div>
         <div class="sources-panel"><div><p class="eyebrow">INFORMACIÓN Y FUENTES</p><h2>Documentación de referencia</h2><p>Las fuentes están enlazadas individualmente desde la tabla de encuestas. Además, puedes consultar la convocatoria oficial y los documentos metodológicos.</p></div><div class="source-links"><a href="https://www.boe.es/buscar/doc.php?id=BOE-A-2026-20742" target="_blank" rel="noopener noreferrer">BOE · Convocatoria del 29 de noviembre ↗</a><a href="https://www.cis.es/es/estudios/catalogo" target="_blank" rel="noopener noreferrer">CIS · Catálogo de estudios ↗</a><a href="https://en.wikipedia.org/wiki/Opinion_polling_for_the_2026_Spanish_general_election" target="_blank" rel="noopener noreferrer">Recopilación histórica de sondeos ↗</a></div></div>
-        <div class="method-warning"><strong>Transparencia editorial</strong><p>El conjunto de datos de esta primera versión es un corte manual fechado a 14/10/2026. No se sincroniza automáticamente con las webs de periódicos ni con el CIS. Para añadir una nueva encuesta se edita <code>data/polls.json</code> y se ejecuta el script de actualización incluido en el repositorio. Los números de la web se recalculan al abrirla.</p></div>
+        <div class="method-warning"><strong>Transparencia editorial</strong><p>Las encuestas incorporadas se guardan en <code>data/polls.json</code> tras contrastar su fuente y su fecha; se regenera <code>data/polls.js</code> para la web. Las revisiones están programadas, pero la página no rastrea fuentes por sí misma ni publica datos sin verificación. Los gráficos se recalculan con el archivo vigente.</p></div>
       </section>
     </main>
-    <footer class="footer"><div class="container footer-row"><div><strong>29N<span>.</span></strong><span>Observatorio del voto · Datos públicos</span></div><div>ESPAÑA · CORTE 14.10.2026 <span class="footer-sep">/</span> <a href="#metodologia">Cómo se calcula ↗</a></div></div></footer>
+    <footer class="footer"><div class="container footer-row"><div><strong>29N<span>.</span></strong><span>Observatorio del voto · Datos públicos</span></div><div>ESPAÑA · CORTE <span id="footerDataCut">14.10.2026</span> <span class="footer-sep">/</span> <a href="#metodologia">Cómo se calcula ↗</a></div></div></footer>
   </div>
 
   <dialog id="pollDialog" class="poll-dialog" aria-labelledby="modalTitle"><div class="dialog-top"><span class="eyebrow">FICHA DE SONDEO</span><button id="closeDialog" aria-label="Cerrar ficha" class="dialog-close">✕</button></div><div id="dialogContent"></div></dialog>
