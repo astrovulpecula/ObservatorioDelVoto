@@ -149,6 +149,17 @@
       <section id="archivo" class="page" aria-labelledby="archive-title" hidden>
         <div class="inner-heading"><p class="eyebrow"><span class="eyebrow-line"></span> FUENTES / ARCHIVO NACIONAL</p><h1 id="archive-title">Todos los <span class="serif-word">sondeos.</span></h1><p>Una encuesta por fila, con fecha de publicación, empresa encargada, estimaciones y enlace a la fuente.</p></div>
         <div class="archive-tools"><div class="search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="archiveSearch" placeholder="Buscar por medio o instituto..." aria-label="Buscar encuestas"></div><select id="archiveMonth" aria-label="Filtrar por mes"><option value="all">Todo el periodo</option></select><select id="archiveType" aria-label="Filtrar por tipo de fuente"><option value="all">Todos los medios</option><option value="organismo">Organismos públicos</option><option value="prensa">Prensa</option><option value="tv_radio">Radio / televisión</option><option value="digital">Medios digitales</option><option value="informe">Institutos / informes</option></select><button id="exportCSV" class="button button-outline">↓ Exportar CSV</button></div>
+        <article class="archive-leaders" aria-labelledby="archiveLeadersTitle">
+          <div class="archive-leaders-heading">
+            <div>
+              <p class="panel-eyebrow">RECUENTO DE ENCUESTAS</p>
+              <h2 id="archiveLeadersTitle">Quién registra el mayor porcentaje</h2>
+            </div>
+            <span class="archive-leaders-context" id="archiveLeaderContext"></span>
+          </div>
+          <div id="archiveLeaderSummary" class="archive-leaders-grid" aria-live="polite"></div>
+          <p class="archive-leaders-note">Cuenta cuántos sondeos otorgan el porcentaje más alto a cada partido <strong>entre PP, PSOE, Vox y Sumar</strong>. El recuento se adapta a los filtros; cada encuesta cuenta una vez. No representa resultados electorales ni incluye por separado a todos los partidos territoriales.</p>
+        </article>
         <div class="archive-resultbar"><strong id="archiveCount">35 encuestas</strong><span>Ordenadas por publicación · más recientes primero</span></div>
         <div class="table-shell"><table class="archive-table"><thead><tr><th>PUBLICACIÓN</th><th>MEDIO / INSTITUTO</th><th>PP</th><th>PSOE</th><th>VOX</th><th>SUMAR</th><th>FUENTE</th></tr></thead><tbody id="archiveBody"></tbody></table></div>
         <p class="archive-footnote">Una publicación puede recoger una estimación de voto y una proyección de escaños. Las encuestas internas sin porcentajes completos y las reestimaciones sobre un mismo trabajo de campo no forman parte de la media.</p>
