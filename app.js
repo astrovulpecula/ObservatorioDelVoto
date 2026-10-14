@@ -199,14 +199,37 @@
     <div class="modal-footer"><small>${p.sourceType==='recopilacion'?'Enlace a catálogo o recopilación cuando no hay URL de noticia directa.':p.sourceType==='cobertura'?'Cobertura informativa de la encuesta; no es una ficha primaria.':'Enlace a la publicación de referencia.'}</small><a class="button button-dark" target="_blank" rel="noopener noreferrer" href="${attr(p.sourceUrl)}">Abrir fuente ↗</a></div>`;
     const dialog=$('pollDialog');if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
   }
+  function archiveLeaders(poll) {
+    const available = parties.filter(p=>Number.isFinite(poll.vote?.[p.key]));
+    if (!available.length) return [];
+    const maximum = Math.max(...available.map(p=>poll.vote[p.key]));
+    return available.filter(p=>Math.abs(poll.vote[p.key]-maximum)<0.000001).map(p=>p.key);
+  }
+  function renderArchiveLeaders(results) {
+    const counts=Object.fromEntries(parties.map(p=>[p.key,0]));
+    let tiedOrUnknown=0;
+    for (const poll of results) {
+      const leaders=archiveLeaders(poll);
+      if (leaders.length===1) counts[leaders[0]]++;
+      else tiedOrUnknown++;
+    }
+    $('archiveLeaderContext').textContent = results.length+' '+(results.length===1?'sondeo visible':'sondeos visibles');
+    const cards=parties.map(p=>{
+      const ratio=results.length ? counts[p.key]/results.length*100 : 0;
+      return `<div class="archive-leader-card" style="--leader-color:${p.color}"><div class="archive-leader-main"><span class="archive-leader-party"><i class="party-dot" style="background:${p.color}"></i>${p.label}</span><strong class="archive-leader-count">${counts[p.key]}</strong></div><div class="archive-leader-track" aria-hidden="true"><span style="width:${ratio.toFixed(2)}%"></span></div><small>${counts[p.key]} de ${results.length} encuestas</small></div>`;
+    });
+    if (tiedOrUnknown) cards.push(`<div class="archive-leader-card archive-leader-tie"><div class="archive-leader-main"><span class="archive-leader-party">Empate / sin datos</span><strong class="archive-leader-count">${tiedOrUnknown}</strong></div><small>Sin liderazgo único</small></div>`);
+    $('archiveLeaderSummary').innerHTML=cards.join('');
+  }
   function renderArchive(){
     const q=($('archiveSearch').value||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
     const month=$('archiveMonth').value,cat=$('archiveType').value;
     const results=allPolls.filter(p=>(month==='all'||p.published.startsWith(month))&&(cat==='all'||p.category===cat)&&(!q||`${p.pollster} ${p.publisher}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q)));
+    renderArchiveLeaders(results);
     $('archiveCount').textContent=results.length+' '+(results.length===1?'encuesta':'encuestas');
     $('archiveBody').innerHTML=results.length ? results.map(p=>`<tr>
       <td>${fmtDate(p.published)}</td><td><div class="medium-name">${escapeHTML(p.publisher)} ${p.category==='organismo'?'<span class="org-chip">PÚBLICO</span>':''}</div><div class="pollster-name">${escapeHTML(p.pollster)}</div></td>
-      ${parties.map(k=>`<td>${fmt(p.vote[k.key])} %</td>`).join('')}
+      ${parties.map(k=>{const isTop=archiveLeaders(p).includes(k.key);return `<td class="${isTop?'archive-vote-top':''}"${isTop?` style="--leader-color:${k.color}"`:''}><div class="archive-vote-reading"><span>${fmt(p.vote[k.key])} %</span>${isTop?'<span class="archive-lead-chip" title="Mayor porcentaje de los cuatro partidos desglosados">Mayor %</span>':''}</div></td>`;}).join('')}
       <td><button class="small-details" data-detail="${attr(p.id)}">Ficha ↗</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty-message">No hay sondeos que coincidan con esos filtros.</td></tr>';
     $('archiveBody').querySelectorAll('[data-detail]').forEach(el=>el.addEventListener('click',()=>{const poll=allPolls.find(p=>p.id===el.dataset.detail);if(poll)modal(poll);}));
   }
