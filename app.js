@@ -22,6 +22,8 @@
   const mean = nums => nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : 0;
   const categories = {organismo:'Organismo público',prensa:'Prensa',tv_radio:'Radio / TV',digital:'Medio digital',informe:'Informe'};
   const state = {mode:'latest',scope:'all',lines:new Set(parties.map(p=>p.key))};
+  const coalitionSelectedKeys = new Set();
+  let currentCoalitionSeats = null;
 
   function latestPerHouse(polls) {
     const map = new Map();
@@ -73,7 +75,7 @@
   }
   function drawSeats(polls){
     const results=avgSeats(polls);
-    if(!results){$('seatComposition').innerHTML='<p>Sin proyecciones de escaños comparables.</p>'; $('seatSummary').innerHTML='';$('seatRanges').innerHTML='';return;}
+    if(!results){$('seatComposition').innerHTML='<p>Sin proyecciones de escaños comparables.</p>'; $('seatSummary').innerHTML='';$('seatRanges').innerHTML='';renderCoalition(null);return;}
     const {result:r,seatPolls}=results;
     // Largest remainder assignment avoids accidentally allocating more than 350 after rounding.
     const labels=[...parties,OTHER];const raw=labels.map(p=>({...p,value:r[p.key],whole:Math.floor(r[p.key]),fraction:r[p.key]-Math.floor(r[p.key])}));
@@ -81,10 +83,58 @@
     [...raw].sort((a,b)=>b.fraction-a.fraction).slice(0,diff).forEach(p=>p.whole++);
     $('seatComposition').innerHTML=raw.map(p=>`<div class="seat-slice ${p.key==='OTROS'?'s-other':''}" title="${p.label}: ${p.whole} escaños ilustrativos" style="background:${p.color};width:${(p.whole/350*100).toFixed(3)}%">${p.whole>=24?p.whole:''}</div>`).join('');
     $('seatSummary').innerHTML=raw.map(p=>`<div class="seat-mini"><span><i class="party-dot" style="width:7px;height:7px;background:${p.color}"></i>${p.label}</span><strong>${p.whole}</strong></div>`).join('');
+    renderCoalition(raw);
     const a=parties.map(p=>({...p,...rangeFor(seatPolls,p.key),avg:r[p.key]}));
     // All four parties share a common 0..180 seat axis.
     $('seatRanges').innerHTML=a.map(p=>`<div class="range-row"><div class="range-label" style="color:${p.color}">${p.label}</div><div class="range-track"><div class="range-band" style="background:${p.color};left:${p.min/180*100}%;width:${(p.max-p.min)/180*100}%"></div><div class="range-dot" style="color:${p.color};background:${p.color};left:${p.avg/180*100}%" title="Media ${fmt(p.avg)} escaños"></div></div><div class="range-value"><strong>${Math.round(p.avg)}</strong> <span>(${Math.floor(p.min)}–${Math.ceil(p.max)})</span></div></div>`).join('')+`<p class="chart-footnote">${seatPolls.length} sondeos con proyección parlamentaria disponible en la selección actual. Rangos publicados; la cifra destacada es su promedio redondeado.</p>`;
   }
+  function renderCoalition(seats){
+    currentCoalitionSeats = seats;
+    const choices=$('coalitionChoices'), tags=$('coalitionSelected'), meter=$('coalitionMeterSegments'), output=$('coalitionResult');
+    if(!seats){
+      choices.innerHTML='<p class="coalition-empty">Sin proyecciones de escaños disponibles.</p>';
+      tags.innerHTML='<p class="coalition-placeholder">No hay escaños comparables para esta selección.</p>';
+      meter.innerHTML='';output.textContent='';$('coalitionClear').disabled=true;return;
+    }
+    const seatByKey=Object.fromEntries(seats.map(p=>[p.key,p.whole]));
+    choices.innerHTML=parties.map(p=>`<button type="button" class="coalition-choice ${coalitionSelectedKeys.has(p.key)?'is-selected':''}" draggable="true" data-coalition-add="${p.key}" aria-pressed="${coalitionSelectedKeys.has(p.key)}" title="Arrastrar o pulsar para ${coalitionSelectedKeys.has(p.key)?'quitar':'añadir'} ${p.label}"><span class="coalition-party"><i class="party-dot" style="background:${p.color}"></i>${p.label}</span><strong>${seatByKey[p.key]} <small>esc.</small></strong><span class="choice-symbol">${coalitionSelectedKeys.has(p.key)?'✓':'+'}</span></button>`).join('');
+    const selected=parties.filter(p=>coalitionSelectedKeys.has(p.key));
+    const total=selected.reduce((n,p)=>n+seatByKey[p.key],0);
+    tags.innerHTML=selected.length?selected.map(p=>`<button type="button" class="coalition-tag" data-coalition-remove="${p.key}" title="Quitar ${p.label}" aria-label="Quitar ${p.label} de la combinación"><i class="party-dot" style="background:${p.color}"></i>${p.label} · ${seatByKey[p.key]} <span aria-hidden="true">×</span></button>`).join(''):'<p class="coalition-placeholder">Arrastra aquí los partidos o selecciónalos a la izquierda.</p>';
+    meter.innerHTML=selected.map(p=>`<div class="coalition-meter-piece" style="background:${p.color};width:${(seatByKey[p.key]/350*100).toFixed(4)}%" title="${p.label}: ${seatByKey[p.key]} escaños"></div>`).join('');
+    const diff=176-total;
+    const status=total>=176?(total===176?'Alcanza exactamente la mayoría absoluta':`Supera la mayoría absoluta por ${-diff} escaños`):`Faltan ${diff} escaños para la mayoría absoluta`;
+    output.innerHTML=`<div><strong>${total}<span> / 350</span></strong><small>${selected.length} ${selected.length===1?'partido seleccionado':'partidos seleccionados'}</small></div><p class="${total>=176?'coalition-success':''}">${escapeHTML(status)}</p>`;
+    $('coalitionClear').disabled=!selected.length;
+    $('coalitionDrop').classList.toggle('is-filled',selected.length>0);
+  }
+  function initCoalition(){
+    $('coalitionChoices').addEventListener('click',e=>{
+      const btn=e.target.closest('[data-coalition-add]');if(!btn||!currentCoalitionSeats)return;
+      const key=btn.dataset.coalitionAdd;
+      if(coalitionSelectedKeys.has(key))coalitionSelectedKeys.delete(key);else coalitionSelectedKeys.add(key);
+      renderCoalition(currentCoalitionSeats);
+    });
+    $('coalitionSelected').addEventListener('click',e=>{
+      const btn=e.target.closest('[data-coalition-remove]');if(!btn)return;
+      coalitionSelectedKeys.delete(btn.dataset.coalitionRemove);renderCoalition(currentCoalitionSeats);
+    });
+    $('coalitionChoices').addEventListener('dragstart',e=>{
+      const btn=e.target.closest('[data-coalition-add]');if(!btn||!currentCoalitionSeats){e.preventDefault();return;}
+      e.dataTransfer.setData('text/plain',btn.dataset.coalitionAdd);
+      e.dataTransfer.effectAllowed='copy';
+    });
+    const drop=$('coalitionDrop');
+    drop.addEventListener('dragover',e=>{if(!currentCoalitionSeats)return;e.preventDefault();e.dataTransfer.dropEffect='copy';drop.classList.add('drag-over');});
+    drop.addEventListener('dragleave',e=>{if(!drop.contains(e.relatedTarget))drop.classList.remove('drag-over');});
+    drop.addEventListener('drop',e=>{
+      e.preventDefault();drop.classList.remove('drag-over');
+      const key=e.dataTransfer.getData('text/plain');
+      if(currentCoalitionSeats&&parties.some(p=>p.key===key)){coalitionSelectedKeys.add(key);renderCoalition(currentCoalitionSeats);}
+    });
+    $('coalitionClear').addEventListener('click',()=>{coalitionSelectedKeys.clear();renderCoalition(currentCoalitionSeats);});
+  }
+
   const xyDate = iso => Math.round((new Date(iso+'T12:00:00Z')-new Date('2026-09-01T12:00:00Z'))/86400000);
   function drawTimeline(){
     const allowed=scoped(allPolls);
@@ -92,10 +142,19 @@
     if (!dates.length){$('timeline').innerHTML='';return;}
     const records=dates.map(day=>{const available=latestPerHouse(allowed.filter(p=>p.published<=day));return {date:day,size:available.length,values:avgVotes(available)};});
     const W=1050,H=300,l=41,r=14,t=11,b=34;
-    const x=day=>l+(xyDate(day)/43)*(W-l-r), y=v=>t+(40-v)/40*(H-t-b);
+    const endDate=dates[dates.length-1];
+    const spanDays=Math.max(1,xyDate(endDate));
+    const x=day=>l+(xyDate(day)/spanDays)*(W-l-r), y=v=>t+(40-v)/40*(H-t-b);
     let lines='';for(let v of [0,10,20,30,40])lines+=`<line class="grid-line" x1="${l}" x2="${W-r}" y1="${y(v)}" y2="${y(v)}"/><text x="${l-11}" y="${y(v)+4}" text-anchor="end">${v}%</text>`;
-    for(let [day,label] of [['2026-09-01','01 SEP'],['2026-09-15','15 SEP'],['2026-10-01','01 OCT'],['2026-10-14','14 OCT']]){
-       lines+=`<text x="${x(day)}" y="${H-7}" text-anchor="${day==='2026-09-01'?'start':day==='2026-10-14'?'end':'middle'}">${label}</text>`;
+    const monthStarts=['2026-09-01','2026-10-01','2026-11-01'].filter(d=>d<=endDate);
+    const ticks=[monthStarts[0]];
+    if(endDate<='2026-10-15'&&endDate>='2026-09-15')ticks.push('2026-09-15');
+    ticks.push(...monthStarts.slice(1));
+    if(!ticks.includes(endDate))ticks.push(endDate);
+    const tickFormat=day=>new Date(day+'T12:00:00Z').toLocaleDateString('es-ES',{day:'2-digit',month:'short',timeZone:'UTC'}).replace(/\./g,'').toUpperCase();
+    for(const [i,day] of ticks.entries()){
+       if(i>0&&i<ticks.length-1&&xyDate(ticks[i+1])-xyDate(day)<8)continue;
+       lines+=`<text x="${x(day)}" y="${H-7}" text-anchor="${i===0?'start':i===ticks.length-1?'end':'middle'}">${tickFormat(day)}</text>`;
     }
     const rendered=parties.filter(p=>state.lines.has(p.key)).map(p=>{
       const coords=records.map(rec=>[x(rec.date),y(rec.values[p.key])]);
@@ -105,6 +164,31 @@
     }).join('');
     $('timeline').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Evolución de estimaciones medias publicadas por fecha">${lines}${rendered}</svg>`;
   }
+  function renderUpdates(){
+    const byInsertion=[...allPolls].sort((a,b)=>(b.addedAt||b.published).localeCompare(a.addedAt||a.published) || b.published.localeCompare(a.published) || a.id.localeCompare(b.id));
+    const recent=byInsertion.slice(0,6);
+    $('latestCut').textContent=`CORTE · ${fmtDate(dataset.metadata.lastUpdated).toUpperCase()}`;
+    $('latestUpdates').innerHTML=recent.length?recent.map(p=>`<article class="update-entry">
+      <div class="update-entry-date"><time datetime="${attr(p.published)}">${fmtDate(p.published)}</time><span>PUBLICACIÓN</span></div>
+      <div class="update-entry-main"><strong>${escapeHTML(p.publisher)}</strong><small>${escapeHTML(p.pollster)}${p.addedAt?' · Incorporada '+fmtDate(p.addedAt):''}</small></div>
+      <button class="update-detail" type="button" data-latest-detail="${attr(p.id)}" aria-label="Ver ficha de ${attr(p.pollster)} publicada el ${fmtDate(p.published)}">Ver sondeo ↗</button>
+    </article>`).join(''):'<p class="coalition-empty">Aún no hay sondeos registrados.</p>';
+    $('latestUpdates').querySelectorAll('[data-latest-detail]').forEach(el=>el.addEventListener('click',()=>{const p=allPolls.find(row=>row.id===el.dataset.latestDetail);if(p)modal(p);}));
+  }
+  function renderMeta(){
+    const cut=dataset.metadata.lastUpdated||allPolls[0]?.published;
+    if(!cut)return;
+    $('dataCutDate').textContent=fmtDate(cut).toUpperCase();
+    $('footerDataCut').textContent=cut.split('-').reverse().join('.');
+    $('methodDataCut').textContent=fmtDate(cut);
+    // Build month filters from data so new months appear automatically.
+    const archiveMonth=$('archiveMonth');
+    const label=new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric',timeZone:'UTC'});
+    [...new Set(allPolls.map(p=>p.published.slice(0,7)))].sort().reverse().forEach(month=>{
+      const option=document.createElement('option');option.value=month;option.textContent=label.format(new Date(month+'-01T12:00:00Z')).replace(/^./,c=>c.toUpperCase());archiveMonth.appendChild(option);
+    });
+  }
+
   function renderOverview(){const active=inAverage();renderStats(active);drawGauge(avgVotes(active));drawSeats(active);drawTimeline();}
 
   function modal(p){
@@ -150,7 +234,7 @@
     const cell=val=>'"'+String(val??'').replace(/"/g,'""')+'"';
     const str='\ufeff'+[headers,...records].map(row=>row.map(v=>cell(typeof v==='number'?String(v).replace('.',','):v)).join(';')).join('\r\n');
     const url=URL.createObjectURL(new Blob([str],{type:'text/csv;charset=utf-8'}));
-    const a=document.createElement('a');a.href=url;a.download='29N_encuestas_2026-10-14.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+    const a=document.createElement('a');a.href=url;a.download='29N_encuestas_'+dataset.metadata.lastUpdated+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
   }
   function navigate(){
     let view=(location.hash||'#panorama').slice(1); if(!['panorama','comparador','archivo','metodologia'].includes(view))view='panorama';
@@ -167,6 +251,7 @@
     $('institutionFilter').addEventListener('change',ev=>{state.scope=ev.target.value;renderOverview();});
     document.querySelectorAll('[data-party]').forEach(b=>b.addEventListener('click',()=>{if(state.lines.has(b.dataset.party)){state.lines.delete(b.dataset.party);b.classList.remove('active');b.setAttribute('aria-pressed','false');}else{state.lines.add(b.dataset.party);b.classList.add('active');b.setAttribute('aria-pressed','true');}drawTimeline();}));
     $('archiveSearch').addEventListener('input',renderArchive);$('archiveMonth').addEventListener('change',renderArchive);$('archiveType').addEventListener('change',renderArchive);$('exportCSV').addEventListener('click',csvDownload);
+    initCoalition();renderMeta();renderUpdates();
     initCompare();$('compareA').addEventListener('change',renderCompare);$('compareB').addEventListener('change',renderCompare);
     $('swapCompare').addEventListener('click',()=>{const first=$('compareA').value;$('compareA').value=$('compareB').value;$('compareB').value=first;renderCompare();});
     $('closeDialog').addEventListener('click',()=>$('pollDialog').close());$('pollDialog').addEventListener('click',e=>{if(e.target===$('pollDialog'))$('pollDialog').close();});
