@@ -1,0 +1,27 @@
+OBSERVATORIO DEL VOTO · 29N
+Historial del proyecto
+
+VERSIÓN 1.0 · 14 octubre 2026
+
+- Creado dashboard web estático, minimalista y de fondo claro.
+- Incluidas 35 encuestas nacionales del 1 de septiembre al 14 de octubre, de 18 institutos.
+- CIS: incorporados septiembre y octubre; opción de excluir organismo público.
+- Agregación por defecto: última encuesta por empresa demoscópica.
+- Opción alternativa: media de todas las encuestas publicadas (sin ponderar).
+- Gráfico semicircular por partido y porcentajes de intención de voto.
+- Visualización ilustrativa de escaños publicados y rangos entre encuestadoras.
+- Evolución de la media nacional a partir de las fechas de publicación.
+- Comparador interactivo de dos encuestas cualquiera (precargado CIS vs 40dB).
+- Archivo completo con búsqueda, filtros, fichas individuales y fuentes.
+- Exportación a CSV compatible con Excel en español.
+- Diseño responsive, sin librerías externas, apto para GitHub Pages.
+- Archivos de datos JSON/JS, herramienta de sincronización y control GitHub Actions.
+
+LÍMITES Y PRÓXIMOS PASOS
+
+- Los datos constituyen un corte editorial fijo, sin actualizaciones automáticas.
+- Revisar enlaces secundarios y contrastar los campos con las fichas originales.
+- Ampliar catálogo de formaciones (Podemos y partidos territoriales) cuando
+  haya suficiente homogeneidad entre fuentes.
+- Posible siguiente versión: histórico de actualización automatizada supervisada.
+- Las proyecciones de escaños no constituyen predicciones propias.
